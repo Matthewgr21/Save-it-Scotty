@@ -1,170 +1,270 @@
 # Save-it-Scotty
 
-**Employee Offboarding Data Extraction Tool**
+**Standalone Employee Offboarding Data Extraction Tool for Windows**
 
-A comprehensive Python-based tool for IT administrators to extract and preserve employee data during offboarding procedures. This tool automates the collection of data from local devices and Microsoft 365 cloud services before account termination.
+A simple, standalone Windows application for IT administrators to extract and preserve employee data during offboarding procedures. No Python installation required on endpoints.
+
+![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![Python](https://img.shields.io/badge/python-3.8+-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 ## Features
 
-### Local Data Extraction
-- **User Folders**: Desktop, Documents, Downloads
-- **Application Data**: AppData (Roaming, Local, LocalLow)
-- **Email Archives**: Outlook PST and OST files
-- **Browser Data**: Bookmarks, history, and saved credentials from Chrome, Edge, and Firefox
+### 🖥️ Standalone Executable
+- **Single EXE file** - No Python installation required
+- **Embedded credentials** - Azure AD credentials baked into the executable
+- **Simple GUI** - Easy-to-use graphical interface
+- **Auto-detection** - Automatically detects current Windows user
+- **~50-100 MB** - Portable and easy to distribute
 
-### Cloud Data Extraction (Microsoft 365)
-- **OneDrive**: All files and folders from user's OneDrive
-- **SharePoint**: Documents from SharePoint sites the user has access to
+### 📁 Local Data Extraction
+- User folders (Desktop, Documents, Downloads)
+- Application data (AppData: Roaming, Local, LocalLow)
+- Email archives (Outlook PST and OST files)
+- Browser data (Chrome, Edge, Firefox)
+  - Bookmarks
+  - History
+  - Saved credentials
+
+### ☁️ Cloud Data Extraction (Microsoft 365)
+- **OneDrive**: All files and folders
+- **SharePoint**: Documents from accessible sites
 - **Teams**: Chat logs, messages, and attachments
 
-### Data Management
-- **Automated Archiving**: Creates password-protected ZIP archives
-- **Detailed Reporting**: JSON and text reports with extraction statistics
-- **Flexible Configuration**: YAML-based configuration for all extraction options
-- **Progress Logging**: Real-time progress updates and comprehensive logging
+### 📦 Data Management
+- Password-protected ZIP archives
+- Detailed extraction reports (JSON + Text)
+- Progress tracking with real-time logs
+- Error handling and recovery
+
+## Quick Start for IT Admins
+
+### Option 1: Use Pre-Built Executable (Easiest)
+
+If your IT team has already built the executable:
+
+1. Copy `SaveItScotty.exe` to the target machine
+2. Right-click → **Run as Administrator**
+3. Click "Auto-Detect Current User" or enter employee details
+4. Select extraction options
+5. Click "Start Extraction"
+6. Wait for completion and review the report
+
+### Option 2: Build Your Own Executable
+
+To build the executable with your organization's Azure AD credentials:
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/Save-it-Scotty.git
+cd Save-it-Scotty
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure your Azure AD credentials
+python build_config.py
+
+# Build the standalone executable
+python build_exe.py
+
+# Your executable is ready
+dist\SaveItScotty.exe
+```
+
+📖 **Detailed instructions**: See [BUILD.md](BUILD.md)
+
+## Screenshots
+
+### Main Interface
+```
+┌─────────────────────────────────────────────────────────┐
+│              Save-it-Scotty                            │
+│     Employee Offboarding Data Extraction Tool          │
+├─────────────────────────────────────────────────────────┤
+│ Employee Information                                    │
+│   Windows Username: [jdoe          ]  [Auto-Detect]    │
+│   Email Address:    [jdoe@company.com]                 │
+├─────────────────────────────────────────────────────────┤
+│ Output Location                                         │
+│   [C:\Users\Admin\Desktop\Extracted_Data] [Browse...]  │
+├─────────────────────────────────────────────────────────┤
+│ Extraction Options                                      │
+│   Local Device:                                         │
+│     ☑ User Folders (Desktop, Documents, Downloads...)   │
+│     ☑ Email Archives (PST/OST files)                    │
+│     ☑ Browser Data (Chrome, Edge, Firefox)              │
+│                                                         │
+│   Microsoft 365:                                        │
+│     ☑ OneDrive Files                                    │
+│     ☑ SharePoint Documents                              │
+│     ☑ Teams Chat Logs                                   │
+│                                                         │
+│     ☑ Create password-protected ZIP archive             │
+├─────────────────────────────────────────────────────────┤
+│ Progress                                                │
+│   [████████████████████████████░░░░░░░░░░░]  75%       │
+│                                                         │
+│   [13:42:15] Starting extraction process...            │
+│   [13:42:16] Target user: jdoe (jdoe@company.com)      │
+│   [13:42:20] ✓ Local files: 1,247 files copied         │
+│   [13:43:15] ✓ Email archives: 2 PST, 1 OST found      │
+│   [13:44:30] Extracting OneDrive files...              │
+├─────────────────────────────────────────────────────────┤
+│ [Start Extraction] [Cancel] [Clear Log]       [Exit]   │
+└─────────────────────────────────────────────────────────┘
+```
 
 ## Requirements
 
+### For Building the Executable
+- Windows 10/11
 - Python 3.8+
-- Windows OS (for local data extraction)
-- Azure AD App Registration with appropriate permissions
-- Administrator access to the target device
+- Azure AD App Registration (see [Azure AD Setup](#azure-ad-setup))
 
-## Installation
+### For Running the Executable
+- Windows 10/11 (x64)
+- Administrator privileges (recommended)
+- Network connectivity (for cloud extraction)
+- **No Python installation required**
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/Save-it-Scotty.git
-   cd Save-it-Scotty
-   ```
+## Azure AD Setup
 
-2. **Create a virtual environment**
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate  # On Windows
-   ```
+To extract cloud data, you need an Azure AD App Registration:
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Quick Setup
 
-## Azure AD Configuration
+1. **Create App Registration**
+   - Go to [Azure Portal](https://portal.azure.com) → Azure AD → App registrations
+   - Click "New registration"
+   - Name: "Save-it-Scotty Data Extraction"
+   - Click Register
 
-To extract cloud data (OneDrive, SharePoint, Teams), you need to set up an Azure AD App Registration:
+2. **Configure Permissions**
 
-### Step 1: Create App Registration
+   Add these **Application permissions** (not Delegated):
+   - `User.Read.All` - Read all users' profiles
+   - `Files.Read.All` - Read files in all site collections
+   - `Sites.Read.All` - Read items in all site collections
+   - `Chat.Read.All` - Read all chat messages
+   - `Mail.Read` - Read mail in all mailboxes
 
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Navigate to **Azure Active Directory** → **App registrations** → **New registration**
-3. Name: "Employee Offboarding Tool"
-4. Supported account types: "Accounts in this organizational directory only"
-5. Click **Register**
+   Click **Grant admin consent** (requires Global Administrator)
 
-### Step 2: Configure API Permissions
+3. **Create Client Secret**
+   - Go to "Certificates & secrets"
+   - Click "New client secret"
+   - Copy the secret value immediately
 
-Add the following **Microsoft Graph** permissions (Application permissions, not Delegated):
+4. **Note Your Credentials**
+   - Tenant ID (from Overview page)
+   - Client ID (from Overview page)
+   - Client Secret (the value you just copied)
 
-- `User.Read.All` - Read all users' full profiles
-- `Files.Read.All` - Read all files in all site collections
-- `Sites.Read.All` - Read items in all site collections
-- `Chat.Read.All` - Read all chat messages
-- `Mail.Read` - Read mail in all mailboxes
+These credentials will be embedded into the executable during build.
 
-After adding permissions, click **Grant admin consent** for your organization.
+## Building the Executable
 
-### Step 3: Create Client Secret
+### Step-by-Step Build Process
 
-1. Go to **Certificates & secrets**
-2. Click **New client secret**
-3. Add description: "Offboarding Tool Secret"
-4. Choose expiration period
-5. Click **Add**
-6. **Copy the secret value immediately** (you won't see it again)
+```bash
+# 1. Setup
+git clone https://github.com/yourusername/Save-it-Scotty.git
+cd Save-it-Scotty
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
 
-### Step 4: Get Required IDs
+# 2. Configure Azure Credentials (interactive wizard)
+python build_config.py
+# Enter your Tenant ID, Client ID, and Client Secret when prompted
 
-- **Tenant ID**: Found on the App Registration overview page
-- **Client ID**: Found on the App Registration overview page (also called Application ID)
-- **Client Secret**: The value you copied in Step 3
+# 3. Build Executable
+python build_exe.py
+# Wait 2-5 minutes for build to complete
 
-## Configuration
+# 4. Test
+dist\SaveItScotty.exe
+```
 
-1. **Copy the example configuration**
-   ```bash
-   copy config.yaml.example config.yaml
-   ```
+**Output**: `dist/SaveItScotty.exe` (50-100 MB)
 
-2. **Edit config.yaml** with your settings:
+📖 **Full build guide**: [BUILD.md](BUILD.md)
 
-   ```yaml
-   azure:
-     tenant_id: "your-tenant-id-here"
-     client_id: "your-client-id-here"
-     client_secret: "your-client-secret-here"
+## Deployment
 
-   extraction:
-     output_dir: "./extracted_data"
-     use_timestamps: true
-     create_archive: true
-     archive_password: ""  # Optional: set a password for ZIP archives
+### Deployment Options
 
-   local_extraction:
-     include_desktop: true
-     include_documents: true
-     include_downloads: true
-     include_appdata: true
-     include_email_archives: true
-     include_browser_data: true
+**Manual Deployment** (Simplest)
+- Copy exe to USB drive or network share
+- Run on target machine
 
-   cloud_extraction:
-     include_onedrive: true
-     include_sharepoint: true
-     include_teams_chats: true
-   ```
+**Network Share**
+```
+\\fileserver\IT-Tools\SaveItScotty.exe
+```
+
+**Group Policy**
+- Deploy via Software Installation GPO
+- Assign to IT Administrators OU
+
+**SCCM/Intune**
+- Package as application
+- Deploy to IT admin devices
+
+📖 **Full deployment guide**: [DEPLOYMENT.md](DEPLOYMENT.md)
+
+### Security Recommendations
+
+- ✅ Only distribute to authorized IT administrators
+- ✅ Store on restricted network shares
+- ✅ Monitor Azure AD sign-in logs
+- ✅ Rotate client secrets every 6-12 months
+- ✅ Use password-protected archives for data transport
 
 ## Usage
 
-### Basic Usage
+### GUI Mode (Recommended)
+
+1. **Launch**: Double-click `SaveItScotty.exe` (Run as Administrator)
+
+2. **Configure**:
+   - Enter employee username and email
+   - Or click "Auto-Detect Current User"
+   - Select output directory
+   - Choose extraction options
+
+3. **Extract**:
+   - Click "Start Extraction"
+   - Monitor progress in real-time
+   - Wait for completion message
+
+4. **Review**:
+   - Check extraction report
+   - Verify all data was captured
+   - Move data to secure storage
+
+### CLI Mode (Advanced)
+
+The tool also supports command-line operation:
 
 ```bash
-python save_it_scotty.py --username WINDOWS_USERNAME --email user@company.com
+# Run with Python
+python save_it_scotty.py --username jdoe --email jdoe@company.com
+
+# Options
+--config config.yaml         # Use specific config file
+--output-dir C:\Extractions  # Custom output directory
+--skip-local                 # Skip local data extraction
+--skip-cloud                 # Skip cloud data extraction
+--no-archive                 # Don't create ZIP archive
 ```
-
-### Advanced Options
-
-```bash
-# Custom configuration file
-python save_it_scotty.py --username jdoe --email jdoe@company.com --config custom_config.yaml
-
-# Custom output directory
-python save_it_scotty.py --username jdoe --email jdoe@company.com --output-dir "C:\Offboarding\JDoe"
-
-# Skip local extraction (cloud only)
-python save_it_scotty.py --username jdoe --email jdoe@company.com --skip-local
-
-# Skip cloud extraction (local only)
-python save_it_scotty.py --username jdoe --email jdoe@company.com --skip-cloud
-
-# Don't create archive (keep extracted files only)
-python save_it_scotty.py --username jdoe --email jdoe@company.com --no-archive
-```
-
-### Command Line Options
-
-- `--username` (required): Windows username of the employee
-- `--email` (required): Email address of the employee
-- `--config`: Path to configuration file (default: config.yaml)
-- `--output-dir`: Override output directory from config
-- `--skip-local`: Skip local file system extraction
-- `--skip-cloud`: Skip cloud data extraction
-- `--no-archive`: Don't create ZIP archive
 
 ## Output Structure
 
 ```
-extracted_data/
-└── username_20240115_143022/
+Extracted_Data/
+└── jdoe_20240115_143022/
     ├── local_data/
     │   ├── Desktop/
     │   ├── Documents/
@@ -180,99 +280,158 @@ extracted_data/
     ├── onedrive/
     │   └── [OneDrive files]
     ├── sharepoint/
-    │   └── [SharePoint sites and files]
+    │   └── [SharePoint sites]
     ├── teams_chats/
-    │   └── [Chat exports]
+    │   ├── 0001_Project_Team/
+    │   │   ├── chat_export.json
+    │   │   ├── transcript.txt
+    │   │   └── attachments/
+    │   └── 0002_Direct_Chat/
     ├── extraction_report.txt
     └── extraction_report.json
+
+Optional: jdoe_20240115_143022.zip (password-protected archive)
 ```
-
-## Security Considerations
-
-1. **Credentials**: Never commit `config.yaml` with real credentials to version control
-2. **Archive Passwords**: Use strong passwords for ZIP archives containing sensitive data
-3. **Access Control**: Restrict access to extracted data and archives
-4. **Azure Permissions**: Use least-privilege principle; only grant necessary permissions
-5. **Audit Logging**: Review logs after each extraction for errors or issues
-6. **Data Retention**: Follow your organization's data retention policies
-7. **Secure Storage**: Store extracted archives in encrypted, access-controlled locations
 
 ## Troubleshooting
 
-### Authentication Issues
+### Common Issues
 
-**Error**: "Authentication failed"
-- Verify your tenant_id, client_id, and client_secret in config.yaml
-- Ensure admin consent has been granted for all API permissions
-- Check that the client secret hasn't expired
+**"Permission Denied" when accessing files**
+- Run as Administrator
+- Ensure target user is logged out
+- Check NTFS permissions
 
-### Permission Denied Errors
+**"Could not authenticate" with Microsoft Graph**
+- Verify Azure AD credentials are correct
+- Check admin consent was granted
+- Ensure client secret hasn't expired
 
-**Error**: "Permission denied accessing files"
-- Run the tool with Administrator privileges
-- Ensure the target user is logged out (browser databases may be locked)
-- Check that you have access to the user profile directory
+**Antivirus blocks the executable**
+- Windows Defender may flag PyInstaller executables
+- Add exception for SaveItScotty.exe
+- Consider code signing for production use
 
-### OneDrive/SharePoint Not Found
+**Extraction is very slow**
+- Large OneDrive/SharePoint can take hours
+- Check network speed
+- Consider extracting local and cloud separately
 
-**Error**: "Could not access OneDrive/SharePoint"
-- Verify the user email is correct
-- Ensure the user account still exists in Azure AD
-- Check that the user has OneDrive/SharePoint access
+📖 **Full troubleshooting guide**: [DEPLOYMENT.md#troubleshooting](DEPLOYMENT.md#troubleshooting)
 
-### Browser Data Locked
+## Advanced Features
 
-**Error**: "Could not copy browser database"
-- Close all browser instances for the target user
-- The tool will attempt to copy locked databases using SQLite backup
+### Customization
 
-## Best Practices
+Edit `src/embedded_config.py` (after running `build_config.py`) to customize:
+- Default output directory
+- Skip file extensions
+- Max file size limits
+- Archive passwords
+- SharePoint site filters
 
-1. **Run Before Account Deletion**: Execute the tool before disabling the user account in Azure AD
-2. **Administrator Rights**: Always run with administrative privileges on the device
-3. **Network Connection**: Ensure stable internet connection for cloud data extraction
-4. **Storage Space**: Verify sufficient disk space for extracted data
-5. **Test First**: Test the tool with a test account before using in production
-6. **Document Procedures**: Keep records of what was extracted and when
-7. **Review Reports**: Always review the extraction report for completeness
+### Automation
 
-## Logging
+For automated/scripted deployments:
 
-Logs are saved to `./logs/extraction.log` by default. Log level can be configured in `config.yaml`:
+```powershell
+# PowerShell example
+$username = "jdoe"
+$email = "jdoe@company.com"
 
-- `DEBUG`: Detailed debugging information
-- `INFO`: General progress information (default)
-- `WARNING`: Warning messages
-- `ERROR`: Error messages only
+# Run extraction silently (requires CLI mode)
+& SaveItScotty.exe --username $username --email $email --output-dir "\\server\Offboarding\$username"
+```
 
-## Limitations
+## Architecture
 
-- **Local extraction** requires the tool to run on the target device or have network access to the user profile
-- **Teams chat history** may have retention policy limitations
-- **SharePoint extraction** is limited to sites the user has access to
-- **Large datasets** may take considerable time to extract
-- **Deleted cloud data** cannot be recovered if already removed
+```
+SaveItScotty.exe (Standalone Executable)
+├── GUI Layer (tkinter)
+│   ├── User input collection
+│   ├── Progress tracking
+│   └── Log display
+├── Extraction Modules
+│   ├── LocalDataExtractor
+│   ├── EmailArchiveExtractor
+│   ├── BrowserDataExtractor
+│   ├── OneDriveExtractor
+│   ├── SharePointExtractor
+│   └── TeamsExtractor
+├── Authentication
+│   └── GraphAuthenticator (MSAL)
+├── Data Management
+│   └── DataArchiver (ZIP + Reports)
+└── Embedded Configuration
+    └── Azure AD credentials (encrypted in exe)
+```
 
-## Contributing
+## Security & Compliance
 
-Contributions are welcome! Please submit pull requests or open issues for bugs and feature requests.
+### Data Protection
+- Extracted data contains sensitive personal information
+- Use encrypted storage and secure transport
+- Follow data retention policies
+- Ensure GDPR/privacy law compliance
 
-## License
+### Access Control
+- Limit tool distribution to authorized personnel
+- Audit all extractions
+- Implement 4-eyes principle for sensitive cases
+- Monitor Azure AD sign-in logs
 
-This tool is provided as-is for legitimate IT administration purposes. Ensure you have proper authorization and comply with all applicable laws and regulations before using this tool.
+### Legal Use
+This tool is designed for **authorized employee offboarding only**. Use only when:
+- ✅ Proper authorization is obtained
+- ✅ HR offboarding process is initiated
+- ✅ Legal requirements are met
+- ✅ Privacy laws are followed
+
+## Documentation
+
+- **[BUILD.md](BUILD.md)** - Build the standalone executable
+- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deploy and manage the tool
+- **[LICENSE](LICENSE)** - MIT License with usage terms
+
+## Version History
+
+### v1.0.0 (2024-01-15)
+- ✨ Initial standalone executable release
+- ✨ GUI interface with auto-detection
+- ✨ Embedded Azure AD credentials
+- ✨ Local data extraction (files, email, browsers)
+- ✨ Cloud extraction (OneDrive, SharePoint, Teams)
+- ✨ Password-protected ZIP archives
+- ✨ Comprehensive reporting
 
 ## Support
 
-For issues, questions, or feature requests, please open an issue on GitHub.
+### Getting Help
 
-## Changelog
+1. Check [DEPLOYMENT.md#troubleshooting](DEPLOYMENT.md#troubleshooting)
+2. Review extraction logs: `logs/extraction.log`
+3. Test with a test account first
+4. Open GitHub issue for bugs
 
-### Version 1.0.0 (2024-01-15)
-- Initial release
-- Local data extraction (Desktop, Documents, Downloads, AppData)
-- Email archive extraction (PST/OST)
-- Browser data extraction (Chrome, Edge, Firefox)
-- Cloud data extraction (OneDrive, SharePoint, Teams)
-- Automated archiving and reporting
-- YAML-based configuration
-- Rich CLI interface with progress indicators
+### Contributing
+
+Contributions welcome! Please:
+- Fork the repository
+- Create a feature branch
+- Submit pull requests
+- Follow existing code style
+
+## License
+
+MIT License with important usage restrictions. See [LICENSE](LICENSE) for details.
+
+**Summary**:
+- ✅ Use for legitimate IT administration
+- ✅ Modify and customize for your needs
+- ❌ Do not use without proper authorization
+- ❌ Do not use for unauthorized access
+- ❌ Authors not liable for misuse
+
+---
+
+**Disclaimer**: This tool is provided for legitimate IT administration purposes. Users are responsible for ensuring compliance with all applicable laws, regulations, and company policies.

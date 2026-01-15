@@ -23,3 +23,6 @@ click>=8.1.7
 
 # Date/Time utilities
 python-dateutil>=2.8.2
+
+# Build tools (only needed for creating executable)
+pyinstaller>=6.3.0

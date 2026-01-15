@@ -41,6 +41,12 @@ venv.bak/
 config.yaml
 config.json
 .env
+src/embedded_config.py
+
+# PyInstaller
+*.spec
+build/
+dist/
 
 # Output directories
 output/
