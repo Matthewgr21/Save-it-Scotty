@@ -1,0 +1,80 @@
+# Azure AD App Registration Configuration
+# Copy this file to config.yaml and fill in your values
+
+azure:
+  # Azure AD Tenant ID
+  tenant_id: "your-tenant-id-here"
+
+  # Azure AD App (Client) ID
+  client_id: "your-client-id-here"
+
+  # Azure AD App Client Secret
+  client_secret: "your-client-secret-here"
+
+  # Required Graph API Permissions:
+  # - User.Read.All
+  # - Files.Read.All
+  # - Sites.Read.All
+  # - Chat.Read.All
+  # - Mail.Read
+
+# Extraction settings
+extraction:
+  # Output directory for extracted data
+  output_dir: "./extracted_data"
+
+  # Create timestamped subdirectories
+  use_timestamps: true
+
+  # Compress output into ZIP archive
+  create_archive: true
+
+  # Archive password (leave empty for no password)
+  archive_password: ""
+
+  # Maximum file size in MB (0 = no limit)
+  max_file_size_mb: 0
+
+  # Skip files with these extensions
+  skip_extensions:
+    - .tmp
+    - .temp
+    - .cache
+
+# Local data extraction settings
+local_extraction:
+  # Standard user folders
+  include_desktop: true
+  include_documents: true
+  include_downloads: true
+
+  # AppData folders
+  include_appdata: true
+
+  # Email archives
+  include_email_archives: true
+
+  # Browser data
+  include_browser_data: true
+  browsers:
+    - chrome
+    - edge
+    - firefox
+
+# Cloud data extraction settings
+cloud_extraction:
+  # OneDrive
+  include_onedrive: true
+
+  # SharePoint
+  include_sharepoint: true
+  sharepoint_sites: []  # Leave empty to scan all sites user has access to
+
+  # Teams chat logs
+  include_teams_chats: true
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  log_to_file: true
+  log_file: "./logs/extraction.log"
