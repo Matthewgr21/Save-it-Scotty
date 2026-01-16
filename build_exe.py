@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Build script for creating standalone executable
+No configuration required - Local data extraction only
 """
 
 import os
@@ -23,16 +24,6 @@ def check_requirements():
         print("\nPlease install PyInstaller:")
         print("  pip install pyinstaller")
         return False
-
-    # Check if embedded_config.py exists
-    config_path = Path('src/embedded_config.py')
-    if not config_path.exists():
-        print(f"  ✗ Embedded configuration not found: {config_path}")
-        print("\nPlease run the configuration tool first:")
-        print("  python build_config.py")
-        return False
-    else:
-        print("  ✓ Embedded configuration found")
 
     print("  ✓ All requirements met\n")
     return True
@@ -72,23 +63,10 @@ a = Analysis(
         'src.local_extractor',
         'src.email_extractor',
         'src.browser_extractor',
-        'src.graph_auth',
-        'src.onedrive_extractor',
-        'src.sharepoint_extractor',
-        'src.teams_extractor',
         'src.archiver',
-        'src.embedded_config',
-        'msal',
-        'msgraph',
-        'azure.identity',
         'requests',
         'pyzipper',
         'yaml',
-        'colorama',
-        'rich',
-        'click',
-        'dateutil',
-        'winreg',
         'sqlite3',
         'tkinter',
         'tkinter.ttk',
@@ -99,7 +77,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['msal', 'msgraph', 'azure'],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -188,7 +166,7 @@ def show_completion_message():
 1. The executable is completely standalone and requires no Python
    installation on the target machine.
 
-2. Your Azure AD credentials are embedded in the executable.
+2. NO CONFIGURATION NEEDED - This version extracts local data only.
 
 3. To deploy:
    - Copy SaveItScotty.exe to the target machine
@@ -200,16 +178,21 @@ def show_completion_message():
    - Group Policy: Deploy via GPO software deployment
    - SCCM/Intune: Package and deploy through your management tool
 
-5. Security notes:
-   - Only distribute to authorized IT administrators
-   - The embedded credentials can be extracted by decompiling
-   - Consider using network access controls and monitoring
-
-6. Usage:
+5. Usage:
    - Double-click SaveItScotty.exe to launch the GUI
-   - Fill in the employee information
+   - Click "Auto-Detect Current User" or enter manually
    - Select extraction options
    - Click "Start Extraction"
+
+6. What it extracts (LOCAL DATA ONLY):
+   - User folders (Desktop, Documents, Downloads, AppData)
+   - Email archives (PST/OST files)
+   - Browser data (Chrome, Edge, Firefox)
+
+7. Cloud data (OneDrive, SharePoint, Teams):
+   - Not included in this version
+   - Extract separately through Microsoft 365 admin portal
+   - Or use the cloud-enabled version (requires Azure AD setup)
 """)
 
     print("="*70)
@@ -220,15 +203,12 @@ def main():
     """Main entry point"""
     print("\n╔═══════════════════════════════════════════════════════════════════╗")
     print("║         Save-it-Scotty - Executable Build Tool               ║")
+    print("║              LOCAL DATA EXTRACTION ONLY                      ║")
     print("╚═══════════════════════════════════════════════════════════════════╝\n")
 
-    # Check requirements
-    if not check_requirements():
-        sys.exit(1)
-
-    # Confirm build
-    print("This will create a standalone Windows executable with embedded")
-    print("Azure AD credentials. The executable will be approximately 50-100 MB.")
+    print("This will create a standalone Windows executable for LOCAL data")
+    print("extraction only (no cloud/Microsoft 365 data).")
+    print("\nThe executable will be approximately 30-50 MB.")
 
     response = input("\nProceed with build? (yes/no): ").strip().lower()
     if response not in ['yes', 'y']:
@@ -236,6 +216,10 @@ def main():
         sys.exit(0)
 
     print()
+
+    # Check requirements
+    if not check_requirements():
+        sys.exit(1)
 
     # Clean previous builds
     clean_build_directories()

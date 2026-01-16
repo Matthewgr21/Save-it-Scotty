@@ -1,6 +1,6 @@
 # Building Save-it-Scotty Standalone Executable
 
-Quick guide to building a standalone Windows executable with embedded Azure AD credentials.
+Quick guide to building a standalone Windows executable - **NO CONFIGURATION REQUIRED!**
 
 ## Quick Start
 
@@ -12,61 +12,26 @@ python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 
-# 2. Configure Azure credentials (interactive)
-python build_config.py
-
-# 3. Build executable
+# 2. Build executable (NO CONFIGURATION NEEDED!)
 python build_exe.py
 
-# 4. Test it
+# 3. Done! Test it
 dist\SaveItScotty.exe
 ```
 
 ## What You Need
 
-### Azure AD App Registration
-
-Create an app registration in Azure AD with these settings:
-
-**API Permissions** (Application, with admin consent):
-- `User.Read.All` - Read all users
-- `Files.Read.All` - Read all files
-- `Sites.Read.All` - Read all sites
-- `Chat.Read.All` - Read all chats
-- `Mail.Read` - Read all mail
-
-**You'll need**:
-- Tenant ID (from app overview)
-- Client ID (from app overview)
-- Client Secret (from Certificates & secrets)
-
 ### Python Environment
 
 - Python 3.8+ (with pip)
 - Windows OS (for building Windows exe)
-- ~500 MB disk space
+- ~200 MB disk space
+
+**That's it! No Azure AD setup, no configuration, no credentials needed.**
 
 ## Build Process
 
-### Step 1: Configure
-
-Run the configuration wizard:
-
-```bash
-python build_config.py
-```
-
-Enter when prompted:
-- Azure AD Tenant ID: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
-- Azure AD Client ID: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
-- Azure AD Client Secret: `your~secret~value`
-- Archive Password (optional): `YourDefaultPassword123`
-
-This creates `src/embedded_config.py` with your credentials.
-
-**⚠️ IMPORTANT**: Never commit `embedded_config.py` to version control!
-
-### Step 2: Build
+### One Command Build
 
 Run the build script:
 
@@ -75,13 +40,13 @@ python build_exe.py
 ```
 
 This will:
-1. Check requirements (PyInstaller, embedded config)
+1. Check requirements (PyInstaller)
 2. Clean previous builds
 3. Create PyInstaller spec file
 4. Build the executable (~2-5 minutes)
-5. Output: `dist/SaveItScotty.exe` (~50-100 MB)
+5. Output: `dist/SaveItScotty.exe` (~30-50 MB)
 
-### Step 3: Test
+### Test
 
 ```bash
 cd dist
@@ -94,6 +59,20 @@ Verify:
 - ✅ Can browse for output directory
 - ✅ Extraction options are available
 
+## What It Extracts
+
+### LOCAL DATA ONLY:
+- ✅ User folders (Desktop, Documents, Downloads, AppData)
+- ✅ Email archives (PST/OST files)
+- ✅ Browser data (Chrome, Edge, Firefox bookmarks, history)
+
+### NOT INCLUDED:
+- ❌ OneDrive (use Microsoft 365 admin portal)
+- ❌ SharePoint (use Microsoft 365 admin portal)
+- ❌ Teams chats (use Microsoft 365 admin portal)
+
+**Why local only?** No Azure AD App Registration required, no credentials to manage, simpler deployment, zero configuration!
+
 ## Troubleshooting Build Issues
 
 ### "PyInstaller not found"
@@ -102,10 +81,6 @@ Verify:
 pip install pyinstaller
 ```
 
-### "embedded_config.py not found"
-
-Run `python build_config.py` first.
-
 ### Build fails with "ImportError"
 
 ```bash
@@ -113,11 +88,12 @@ Run `python build_config.py` first.
 pip install -r requirements.txt --upgrade
 ```
 
-### Executable is too large (>200 MB)
+### Executable is too large (>100 MB)
 
-Normal size is 50-100 MB. If larger:
-- Check for duplicate dependencies
-- Clean build: `python build_exe.py` (it auto-cleans)
+Normal size is 30-50 MB. If larger, try:
+```bash
+python build_exe.py  # Script auto-cleans before build
+```
 
 ### Antivirus blocks executable
 
@@ -127,9 +103,21 @@ Normal size is 50-100 MB. If larger:
 
 ## Customization
 
-### Change Default Settings
+### Change Default Archive Password
 
-Edit `build_config.py` before running it, or manually edit `src/embedded_config.py` after creation.
+Edit `src/gui.py`, find:
+
+```python
+'archive_password': '',  # Set a default password here if desired
+```
+
+Change to:
+
+```python
+'archive_password': 'YourDefaultPassword123',
+```
+
+Then rebuild with `python build_exe.py`
 
 ### Add Company Logo/Icon
 
@@ -139,9 +127,9 @@ Edit `build_config.py` before running it, or manually edit `src/embedded_config.
 
 ### Change Output Name
 
-Edit `SaveItScotty.spec`:
-```python
-name='SaveItScotty',  # Change this
+After build completes, rename the exe:
+```bash
+ren dist\SaveItScotty.exe "YourCompanyName-DataExtractor.exe"
 ```
 
 ## Distribution
@@ -151,7 +139,8 @@ name='SaveItScotty',  # Change this
 The executable is completely standalone:
 - ✅ No Python installation required
 - ✅ No DLL dependencies (all bundled)
-- ✅ No config files needed (credentials embedded)
+- ✅ NO config files needed
+- ✅ NO Azure credentials needed
 - ✅ Runs on Windows 10/11 (x64)
 
 ### Deployment Options
@@ -176,72 +165,43 @@ SaveItScotty.exe → Copy to USB → Run on target machine
 
 ## Security Notes
 
-### Embedded Credentials
+### No Embedded Credentials
 
-The Azure AD credentials are compiled into the exe. They can be extracted with:
-- Decompilers (PyInstaller extractors)
-- Memory dumps (while running)
-- Binary string searches
-
-**Mitigations**:
-- Only distribute to authorized IT staff
-- Use network access controls
-- Monitor Azure AD sign-in logs
-- Rotate secrets regularly (rebuild exe)
+This version has **NO credentials embedded** because it doesn't connect to any cloud services. It only extracts local device data.
 
 ### Recommended Security Practices
 
 1. **Access Control**: Store exe on restricted network share
-2. **Monitoring**: Enable Azure AD sign-in logging
-3. **Rotation**: Rebuild with new secrets every 6-12 months
-4. **Auditing**: Log all executions (Windows Event Log)
-5. **Principle of Least Privilege**: Consider separate app registrations per team
+2. **Auditing**: Log all executions (Windows Event Log)
+3. **Archive Passwords**: Use password-protected ZIP for extracted data
+4. **Data Handling**: Move extracted data to secure storage immediately
 
-## Rebuilding with New Credentials
+## Rebuilding
 
-When secrets expire or need rotation:
+To rebuild after making changes:
 
 ```bash
-# 1. Update credentials
-python build_config.py
-
-# 2. Rebuild
+# Make your changes to src/gui.py or other modules
 python build_exe.py
 
-# 3. Replace old exe in distribution locations
+# Replace old exe in distribution locations
 copy dist\SaveItScotty.exe \\fileserver\IT-Tools\
-
-# 4. Test with new credentials
 ```
 
 ## Advanced: Build Variants
 
 ### Console Mode (shows terminal window)
 
-Edit `SaveItScotty.spec`:
+Edit the spec content in `build_exe.py`, change:
 ```python
-console=True,  # Change from False
+console=False,  # Change to True
 ```
 
 ### Debug Build (verbose logging)
 
-Edit `SaveItScotty.spec`:
+Edit the spec content in `build_exe.py`, change:
 ```python
-debug=True,  # Change from False
-```
-
-### Multiple Configurations
-
-Create separate config files:
-```bash
-python build_config.py  # Creates embedded_config.py
-mv src/embedded_config.py src/embedded_config_prod.py
-python build_config.py  # Create test config
-mv src/embedded_config.py src/embedded_config_test.py
-
-# Switch between them:
-cp src/embedded_config_prod.py src/embedded_config.py
-python build_exe.py
+debug=False,  # Change to True
 ```
 
 ## File Locations After Build
@@ -252,8 +212,6 @@ Save-it-Scotty/
 │   └── SaveItScotty.exe          ← Your standalone executable
 ├── build/                        ← Temporary build files (can delete)
 ├── SaveItScotty.spec            ← PyInstaller spec file
-├── src/
-│   └── embedded_config.py       ← Your Azure credentials (DO NOT COMMIT!)
 └── ...
 ```
 
@@ -261,17 +219,29 @@ Save-it-Scotty/
 
 | Command | Purpose |
 |---------|---------|
-| `python build_config.py` | Configure Azure credentials |
 | `python build_exe.py` | Build standalone executable |
 | `dist\SaveItScotty.exe` | Run the built application |
-| `git status` | Check for embedded_config.py (should be ignored) |
 
 ## Need Help?
 
 - **Build Errors**: Check you have Python 3.8+ and all dependencies installed
 - **Runtime Errors**: Run from command prompt to see error messages
-- **Azure Errors**: Verify API permissions and admin consent
-- **Size Issues**: Normal exe is 50-100 MB, up to 150 MB is acceptable
+- **Size Issues**: Normal exe is 30-50 MB
+
+## Comparison: Local-Only vs Cloud-Enabled
+
+| Feature | This Version (Local-Only) | Cloud-Enabled Version |
+|---------|---------------------------|----------------------|
+| **Setup Complexity** | ⭐ Simple (no setup) | ⭐⭐⭐ Complex (Azure AD) |
+| **Build Process** | 1 command | 2 commands + config |
+| **Credentials** | None needed | Azure AD required |
+| **Local Data** | ✅ Yes | ✅ Yes |
+| **OneDrive** | ❌ No | ✅ Yes |
+| **SharePoint** | ❌ No | ✅ Yes |
+| **Teams Chats** | ❌ No | ✅ Yes |
+| **File Size** | 30-50 MB | 50-100 MB |
+
+**Recommendation**: Use this local-only version unless you specifically need automated cloud extraction.
 
 ---
 

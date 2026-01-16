@@ -1,6 +1,6 @@
 """
 GUI interface for Save-it-Scotty
-Simple graphical interface for IT administrators
+Simple graphical interface for IT administrators - Local Data Extraction Only
 """
 
 import os
@@ -24,7 +24,7 @@ class SaveItScottyGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Save-it-Scotty - Employee Data Extraction Tool")
-        self.root.geometry("800x700")
+        self.root.geometry("800x650")
         self.root.resizable(True, True)
 
         # Configure style
@@ -40,9 +40,6 @@ class SaveItScottyGUI:
         self.extract_local_var = tk.BooleanVar(value=True)
         self.extract_email_var = tk.BooleanVar(value=True)
         self.extract_browser_var = tk.BooleanVar(value=True)
-        self.extract_onedrive_var = tk.BooleanVar(value=True)
-        self.extract_sharepoint_var = tk.BooleanVar(value=True)
-        self.extract_teams_var = tk.BooleanVar(value=True)
         self.create_archive_var = tk.BooleanVar(value=True)
 
         # Status
@@ -81,8 +78,8 @@ class SaveItScottyGUI:
 
         title_label = ttk.Label(header_frame, text="Save-it-Scotty", font=('Arial', 16, 'bold'))
         title_label.pack()
-        subtitle_label = ttk.Label(header_frame, text="Employee Offboarding Data Extraction Tool",
-                                   font=('Arial', 10))
+        subtitle_label = ttk.Label(header_frame, text="Employee Offboarding Data Extraction Tool - Local Data Only",
+                                   font=('Arial', 9))
         subtitle_label.pack()
 
         # User Information Section
@@ -94,7 +91,7 @@ class SaveItScottyGUI:
         username_entry = ttk.Entry(user_frame, textvariable=self.username_var, width=40)
         username_entry.grid(row=0, column=1, sticky=(tk.W, tk.E), pady=5, padx=(5, 0))
 
-        ttk.Label(user_frame, text="Email Address:").grid(row=1, column=0, sticky=tk.W, pady=5)
+        ttk.Label(user_frame, text="Email Address (optional):").grid(row=1, column=0, sticky=tk.W, pady=5)
         email_entry = ttk.Entry(user_frame, textvariable=self.email_var, width=40)
         email_entry.grid(row=1, column=1, sticky=(tk.W, tk.E), pady=5, padx=(5, 0))
 
@@ -122,7 +119,7 @@ class SaveItScottyGUI:
         local_frame = ttk.Frame(options_frame)
         local_frame.grid(row=0, column=0, sticky=(tk.W, tk.E))
 
-        ttk.Label(local_frame, text="Local Device:", font=('Arial', 9, 'bold')).grid(row=0, column=0, sticky=tk.W)
+        ttk.Label(local_frame, text="Local Device Data:", font=('Arial', 9, 'bold')).grid(row=0, column=0, sticky=tk.W)
         ttk.Checkbutton(local_frame, text="User Folders (Desktop, Documents, Downloads, AppData)",
                        variable=self.extract_local_var).grid(row=1, column=0, sticky=tk.W, padx=(20, 0))
         ttk.Checkbutton(local_frame, text="Email Archives (PST/OST files)",
@@ -132,23 +129,15 @@ class SaveItScottyGUI:
 
         ttk.Separator(options_frame, orient='horizontal').grid(row=1, column=0, sticky=(tk.W, tk.E), pady=10)
 
-        # Cloud data options
-        cloud_frame = ttk.Frame(options_frame)
-        cloud_frame.grid(row=2, column=0, sticky=(tk.W, tk.E))
-
-        ttk.Label(cloud_frame, text="Microsoft 365:", font=('Arial', 9, 'bold')).grid(row=0, column=0, sticky=tk.W)
-        ttk.Checkbutton(cloud_frame, text="OneDrive Files",
-                       variable=self.extract_onedrive_var).grid(row=1, column=0, sticky=tk.W, padx=(20, 0))
-        ttk.Checkbutton(cloud_frame, text="SharePoint Documents",
-                       variable=self.extract_sharepoint_var).grid(row=2, column=0, sticky=tk.W, padx=(20, 0))
-        ttk.Checkbutton(cloud_frame, text="Teams Chat Logs",
-                       variable=self.extract_teams_var).grid(row=3, column=0, sticky=tk.W, padx=(20, 0))
-
-        ttk.Separator(options_frame, orient='horizontal').grid(row=3, column=0, sticky=(tk.W, tk.E), pady=10)
-
         # Archive option
         ttk.Checkbutton(options_frame, text="Create password-protected ZIP archive",
-                       variable=self.create_archive_var).grid(row=4, column=0, sticky=tk.W)
+                       variable=self.create_archive_var).grid(row=2, column=0, sticky=tk.W)
+
+        # Info label
+        info_label = ttk.Label(options_frame,
+                               text="Note: This tool extracts local device data only. Cloud data (OneDrive, SharePoint, Teams)\nmust be extracted separately through Microsoft 365 admin portal.",
+                               foreground='#666', font=('Arial', 8))
+        info_label.grid(row=3, column=0, sticky=tk.W, pady=(10, 0))
 
         # Progress Section
         progress_frame = ttk.LabelFrame(main_frame, text="Progress", padding="10")
@@ -195,10 +184,10 @@ class SaveItScottyGUI:
                 if userdomain:
                     email = f"{username}@{userdomain.lower()}.com"
                     self.email_var.set(email)
-                    self.log_message(f"Suggested email: {email} (please verify)")
+                    self.log_message(f"Suggested email: {email} (optional field)")
 
                 messagebox.showinfo("Auto-Detect",
-                                  f"Detected user: {username}\nPlease verify the email address is correct.")
+                                  f"Detected user: {username}\n\nEmail field is optional for local extraction.")
         except Exception as e:
             messagebox.showerror("Error", f"Could not auto-detect user: {e}")
 
@@ -239,18 +228,13 @@ class SaveItScottyGUI:
             messagebox.showerror("Validation Error", "Please enter a Windows username")
             return False
 
-        if not self.email_var.get():
-            messagebox.showerror("Validation Error", "Please enter an email address")
-            return False
-
         if not self.output_dir_var.get():
             messagebox.showerror("Validation Error", "Please select an output directory")
             return False
 
         # Check if any extraction option is selected
         if not any([self.extract_local_var.get(), self.extract_email_var.get(),
-                   self.extract_browser_var.get(), self.extract_onedrive_var.get(),
-                   self.extract_sharepoint_var.get(), self.extract_teams_var.get()]):
+                   self.extract_browser_var.get()]):
             messagebox.showerror("Validation Error", "Please select at least one extraction option")
             return False
 
@@ -262,11 +246,11 @@ class SaveItScottyGUI:
             return
 
         # Confirm before starting
+        email_info = f" ({self.email_var.get()})" if self.email_var.get() else ""
         if not messagebox.askyesno("Confirm Extraction",
                                    f"Start data extraction for:\n\n"
-                                   f"User: {self.username_var.get()}\n"
-                                   f"Email: {self.email_var.get()}\n\n"
-                                   f"This may take several minutes to hours depending on data size.\n\n"
+                                   f"User: {self.username_var.get()}{email_info}\n\n"
+                                   f"This may take several minutes depending on data size.\n\n"
                                    f"Continue?"):
             return
 
@@ -276,8 +260,8 @@ class SaveItScottyGUI:
         self.progress_bar.start()
 
         self.log_message("="*60)
-        self.log_message("Starting extraction process...")
-        self.log_message(f"Target user: {self.username_var.get()} ({self.email_var.get()})")
+        self.log_message("Starting LOCAL data extraction...")
+        self.log_message(f"Target user: {self.username_var.get()}{email_info}")
         self.log_message(f"Output directory: {self.output_dir_var.get()}")
         self.log_message("="*60)
 
@@ -292,17 +276,13 @@ class SaveItScottyGUI:
             from local_extractor import LocalDataExtractor
             from email_extractor import EmailArchiveExtractor
             from browser_extractor import BrowserDataExtractor
-            from graph_auth import GraphAuthenticator
-            from onedrive_extractor import OneDriveExtractor
-            from sharepoint_extractor import SharePointExtractor
-            from teams_extractor import TeamsExtractor
             from archiver import DataArchiver
 
-            # Load configuration
-            config = self.load_config()
+            # Get configuration
+            config = self.get_default_config()
 
             username = self.username_var.get()
-            email = self.email_var.get()
+            email = self.email_var.get() or f"{username}@unknown.com"
             output_dir = Path(self.output_dir_var.get())
 
             # Create timestamped output directory
@@ -311,6 +291,7 @@ class SaveItScottyGUI:
             output_path.mkdir(parents=True, exist_ok=True)
 
             stats = {}
+            start_time = datetime.now()
 
             # Local extraction
             if self.extract_local_var.get():
@@ -332,43 +313,11 @@ class SaveItScottyGUI:
                 stats['browser'] = browser_extractor.extract_all(username)
                 self.log_message(f"✓ Browser data: {stats['browser'].get('profiles_extracted', 0)} profiles extracted")
 
-            # Cloud extraction
-            if any([self.extract_onedrive_var.get(), self.extract_sharepoint_var.get(),
-                   self.extract_teams_var.get()]):
-                self.log_message("\n--- Cloud Data Extraction ---")
-                self.log_message("Authenticating with Microsoft Graph API...")
-
-                try:
-                    auth = GraphAuthenticator(config)
-                    auth.authenticate()
-                    self.log_message("✓ Authentication successful")
-
-                    if self.extract_onedrive_var.get():
-                        self.log_message("\nExtracting OneDrive files...")
-                        onedrive_extractor = OneDriveExtractor(auth, config, output_path)
-                        stats['onedrive'] = onedrive_extractor.extract_all(email)
-                        self.log_message(f"✓ OneDrive: {stats['onedrive'].get('files_downloaded', 0)} files downloaded")
-
-                    if self.extract_sharepoint_var.get():
-                        self.log_message("\nExtracting SharePoint documents...")
-                        sharepoint_extractor = SharePointExtractor(auth, config, output_path)
-                        stats['sharepoint'] = sharepoint_extractor.extract_all(email)
-                        self.log_message(f"✓ SharePoint: {stats['sharepoint'].get('files_downloaded', 0)} files downloaded")
-
-                    if self.extract_teams_var.get():
-                        self.log_message("\nExtracting Teams chat logs...")
-                        teams_extractor = TeamsExtractor(auth, config, output_path)
-                        stats['teams'] = teams_extractor.extract_all(email)
-                        self.log_message(f"✓ Teams: {stats['teams'].get('chats_exported', 0)} chats exported")
-
-                except Exception as e:
-                    self.log_message(f"✗ Cloud extraction error: {e}")
-                    logger.error(f"Cloud extraction error: {e}", exc_info=True)
-
             # Generate report
             self.log_message("\n--- Generating Report ---")
+            duration = (datetime.now() - start_time).total_seconds()
             archiver = DataArchiver(config)
-            report_path = archiver.generate_report(username, email, output_path, stats, 0)
+            report_path = archiver.generate_report(username, email, output_path, stats, duration)
             self.log_message(f"✓ Report generated: {report_path.name}")
 
             # Create archive
@@ -406,25 +355,6 @@ class SaveItScottyGUI:
         finally:
             self.root.after(0, self.extraction_complete)
 
-    def load_config(self):
-        """Load configuration"""
-        # Try to load from embedded config first
-        try:
-            from embedded_config import get_config
-            return get_config()
-        except ImportError:
-            pass
-
-        # Fall back to config.yaml
-        config_path = Path(__file__).parent.parent / 'config.yaml'
-        if config_path.exists():
-            import yaml
-            with open(config_path, 'r') as f:
-                return yaml.safe_load(f)
-
-        # Use defaults
-        return self.get_default_config()
-
     def get_default_config(self):
         """Get default configuration"""
         return {
@@ -432,7 +362,7 @@ class SaveItScottyGUI:
                 'output_dir': str(Path.home() / 'Desktop' / 'Extracted_Data'),
                 'use_timestamps': True,
                 'create_archive': True,
-                'archive_password': '',
+                'archive_password': '',  # Set a default password here if desired
                 'max_file_size_mb': 0,
                 'skip_extensions': ['.tmp', '.temp', '.cache']
             },
@@ -444,12 +374,6 @@ class SaveItScottyGUI:
                 'include_email_archives': True,
                 'include_browser_data': True,
                 'browsers': ['chrome', 'edge', 'firefox']
-            },
-            'cloud_extraction': {
-                'include_onedrive': True,
-                'include_sharepoint': True,
-                'include_teams_chats': True,
-                'sharepoint_sites': []
             },
             'logging': {
                 'level': 'INFO',
